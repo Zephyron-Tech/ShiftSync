@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #eef2f8;
+  --surface: #ffffff;
+  --ink: #0f1a33;
+  --ink-2: #4a5772;
+  --line: #d3dbe8;
+  --accent: #243069;
+  --on-accent: #ffffff;
+  --day: #f0ab2a;
+  --morning: #7dbfe8;
+  --night: #243069;
+  --holiday: #e58fa0;
+  --unknown: #98a6bc;
+  --track-dark: #dde3f0;
+  --track-lit: #fff3d1;
+  --weekend: #e6ebf4;
+  --danger: #a3261f;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1122;
+    --surface: #131b33;
+    --ink: #e8edf8;
+    --ink-2: #9aa8c4;
+    --line: #26314f;
+    --accent: #a9b8ff;
+    --on-accent: #0b1122;
+    --night: #6c7fe6;
+    --track-dark: #19223f;
+    --track-lit: #4d4128;
+    --weekend: #101831;
+    --danger: #ff9a92;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink-2);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+/* Controls: pointer cursor, no 300 ms tap delay, no text selection on long press. */
+button, select, label, a[href], summary { cursor: pointer; touch-action: manipulation; }
+button, a[href] { -webkit-user-select: none; user-select: none; }
+button:disabled, a[aria-disabled="true"] { cursor: not-allowed; }
+
+.press { transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms, box-shadow 150ms, background-color 150ms; }
+.press:active:not(:disabled) { transform: scale(0.97); }
+
+/* Hover only where a real pointer exists, so touch never gets a stuck hover. */
+@media (hover: hover) and (pointer: fine) {
+  .cell:hover:not([aria-pressed="true"]) { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .row:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+  .primary:hover:not(:disabled) { filter: brightness(1.12); }
+}
+
+/* Detail card content changes when another day is picked. */
+@keyframes detail-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.detail-in { animation: detail-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) { .detail-in { animation: none; } .press { transition: none; } .press:active:not(:disabled) { transform: none; } }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  /* no tabular-nums: this face draws a slashed zero there, which reads as strikethrough in small times */
+  line-height: 1.45;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Strip bars grow in once when a schedule loads. */
+@keyframes bar-in {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bar {
+  transform-origin: top;
+  animation: bar-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 16ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar { animation: none; }
+}
+
+.tone-day { background: var(--day); color: #0f1a33; }
+.tone-morning { background: var(--morning); color: #0f1a33; }
+.tone-night { background: var(--night); color: #fff; }
+.tone-holiday { background: var(--holiday); color: #0f1a33; }
+.tone-unknown {
+  background: color-mix(in srgb, var(--unknown) 35%, transparent);
+  border: 1.5px dashed var(--unknown);
+  color: var(--ink);
+}
+
+/* Calendar rows share whatever height the viewport leaves, so the month fits one screen. */
+.cal { --chrome: 362px; --row-extra: 24px; }
+@media (min-width: 1024px) { .cal { --chrome: 150px; --row-extra: 42px; } }
+/* An unknown-code notice sits under the calendar on phones and takes its height from the rows. */
+.has-notice .cal { --chrome: 436px; }
+@media (min-width: 1024px) { .has-notice .cal { --chrome: 150px; } }
+.cal-track {
+  height: clamp(14px, calc((100dvh - var(--chrome)) / var(--rows) - var(--row-extra)), 112px);
+}
+
+dialog.sheet {
+  margin: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: 90dvh;
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 0;
+}
+dialog.sheet::backdrop { background: rgb(8 12 28 / 0.5); }
+@keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+dialog.sheet[open] { animation: sheet-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) { dialog.sheet[open] { animation: none; } }
+
+/* Editor has no detail card or bottom bar, only a header and a month switcher above the calendar. */
+.editor .cal { --chrome: 292px; }
+@media (min-width: 1024px) { .editor .cal { --chrome: 150px; } }

@@ -1,0 +1,6 @@
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
+overrides:
+  # @vercel/cli-config pins zod 4.1.11 (GHSA-mrhx-c7xc-m3w5); drop once @vercel/blob ships a fixed chain
+  "zod@<4.6.6": ^4.6.7
