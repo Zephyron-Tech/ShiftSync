@@ -9,7 +9,7 @@ import { Sheet } from "@/components/Sheet";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { decodeSchedule } from "@/lib/share";
 import { parsePdf } from "@/lib/parsePdfClient";
-import type { Schedule } from "@/lib/parsePdf";
+import type { Schedule, Shift } from "@/lib/parsePdf";
 
 // Preselected name before anything is remembered; set it in the environment, not in the (public) source.
 const DEFAULT_PERSON = process.env.NEXT_PUBLIC_DEFAULT_PERSON ?? "";
@@ -102,7 +102,7 @@ export default function Home() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Links from the WhatsApp bot carry their data after "#": #d=<schedule>, #s=<token> (subscribe), #e=<token> (edit)
+    // Links from the WhatsApp bot carry their data after "#": #v=<token> (preview of the stored schedule), #s=<token> (subscribe), #e=<token> (edit), #d=<schedule> (self-contained preview)
     const TOKEN = /^[A-Za-z0-9_-]{32}$/;
     const read = () => {
       try {
@@ -120,6 +120,22 @@ export default function Home() {
           return;
         }
         setSubscribe(null);
+        const view = h.get("v");
+        if (view && TOKEN.test(view)) {
+          fetch(`/api/me/${view}`)
+            .then(async (r) => ({ ok: r.ok, body: await r.json() }))
+            .then(({ ok, body }) => {
+              const months = (body as { months?: Record<string, Shift[]> }).months ?? {};
+              const key = Object.keys(months).sort().at(-1);
+              if (!ok || !key) throw new Error((body as { error?: string }).error);
+              const name = (body as { name: string }).name;
+              setSchedule({ year: Number(key.slice(0, 4)), month: Number(key.slice(5, 7)), people: [{ name, shifts: months[key] }] });
+              setFeedToken(view);
+              setPerson(name);
+            })
+            .catch((e: Error) => setError(e.message || "Nepodařilo se načíst rozpis. Zkus ho nahrát ručně."));
+          return;
+        }
         const d = h.get("d");
         if (d) {
           const sched = decodeSchedule(d);

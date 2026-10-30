@@ -81,8 +81,8 @@ export async function POST(request: Request) {
         try {
           const { token: calToken, first, overwrote } = await saveMonth(person, schedule.year, schedule.month, mine.shifts);
           const sub = `${base}/#s=${calToken}&p=${encodeURIComponent(person)}`;
-          // the preview carries the feed token too, so its export panel can offer the live subscription
-          preview = `${link}&t=${calToken}`;
+          // short preview: the page loads the stored schedule by token and offers the live subscription
+          preview = `${base}/#v=${calToken}`;
           rest += first
             ? `\n\nKalendář si stačí přidat jednou, další rozpisy už jen přepošli a doplní se sám:\n${sub}`
             : `\n\nDoplnil jsem to do tvého kalendáře, změna se projeví do 24 hodin.\nOdběr kalendáře (přidává se jen jednou):\n${sub}`;
