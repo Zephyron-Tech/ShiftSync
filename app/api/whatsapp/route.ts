@@ -79,9 +79,10 @@ export async function POST(request: Request) {
         let text = `Rozpis na ${month}: ${mine.shifts.length} směn.\nNáhled:\n${preview}`;
         try {
           const { token: calToken, first, overwrote } = await saveMonth(person, schedule.year, schedule.month, mine.shifts);
+          const sub = `${base}/#s=${calToken}&p=${encodeURIComponent(person)}`;
           text += first
-            ? `\n\nKalendář si stačí přidat jednou, další rozpisy už jen přepošli a doplní se sám:\n${base}/#s=${calToken}&p=${encodeURIComponent(person)}`
-            : "\n\nDoplnil jsem to do tvého kalendáře, změna se projeví do 24 hodin.";
+            ? `\n\nKalendář si stačí přidat jednou, další rozpisy už jen přepošli a doplní se sám:\n${sub}`
+            : `\n\nDoplnil jsem to do tvého kalendáře, změna se projeví do 24 hodin.\nOdběr kalendáře (přidává se jen jednou):\n${sub}`;
           if (overwrote.length) text += "\nPozor: ručně upravené směny na tento měsíc jsem přepsal rozpisem z PDF.";
           text += `\nZměnu směny pošli jako text, např. „zmena 12.11. D7“, nebo napiš „pomoc“.`;
         } catch (err) {

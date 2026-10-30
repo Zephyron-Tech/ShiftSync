@@ -4,7 +4,6 @@ import { useState } from "react";
 import { buildIcs } from "@/lib/ics";
 import { GOOGLE_CLIENT_ID, googleSignIn, importShifts, listWritableCalendars, type GCalendar } from "@/lib/googleCalendar";
 import type { Person, Schedule } from "@/lib/parsePdf";
-import { encodeSchedule, onlyPeople } from "@/lib/share";
 
 const ROW = "row press flex min-h-14 lg:min-h-12 lg:py-1.5 w-full flex-col items-start justify-center rounded-xl border border-line bg-surface px-4 py-2 text-left disabled:opacity-40";
 const DESC = "text-pretty text-sm text-ink2";
@@ -20,9 +19,6 @@ export function ExportPanel({ schedule, person, heading = true }: { schedule: Sc
   const [token, setToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const empty = person.shifts.length === 0;
-
-  const feedPath = () => `/api/ics?d=${encodeSchedule(onlyPeople(schedule, [person.name]))}&p=${encodeURIComponent(person.name)}`;
-  const feedUrl = (scheme: string) => `${scheme}//${location.host}${feedPath()}`;
 
   function download() {
     const url = URL.createObjectURL(new Blob([buildIcs(person, schedule.year, schedule.month)], { type: "text/calendar;charset=utf-8" }));
@@ -104,22 +100,7 @@ export function ExportPanel({ schedule, person, heading = true }: { schedule: Sc
             <span className={DESC}>Vybereš, do kterého kalendáře půjdou.</span>
           </button>
         )
-      ) : (
-        <a
-          className={ROW}
-          href={empty ? undefined : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(feedUrl("webcal:"))}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <b>Google Kalendář</b>
-          <span className={DESC}>Přidá kalendář podle adresy.</span>
-        </a>
-      )}
-
-      <a className={ROW} href={empty ? undefined : feedUrl("webcal:")}>
-        <b>iPhone a Mac kalendář</b>
-        <span className={DESC}>Samostatný kalendář, jde smazat naráz.</span>
-      </a>
+      ) : null}
 
       <button onClick={download} disabled={empty} className={ROW}>
         <b>Soubor .ics</b>
@@ -131,6 +112,10 @@ export function ExportPanel({ schedule, person, heading = true }: { schedule: Sc
           <span className={DESC}>Pošli ho z telefonu do aplikace podle výběru.</span>
         </button>
       )}
+
+      <p className="text-pretty text-sm text-ink2">
+        Kalendář, který se sám aktualizuje, dostaneš od WhatsApp bota. Napiš mu „odkaz“.
+      </p>
 
       {status && (
         <p role="status" className="text-sm text-ink2">

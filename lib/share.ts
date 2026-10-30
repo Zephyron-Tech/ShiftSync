@@ -4,7 +4,7 @@ import type { Person, Schedule, Shift } from "./parsePdf";
 // A schedule travels inside a link (after `#`, so servers never see it from the page URL).
 type Compact = { y: number; m: number; p: [string, [number, string, (number | null)?, string[]?][]][] };
 
-// Links are untrusted (anyone can craft one for /api/ics), so decoding is capped and checked.
+// Links are untrusted (anyone can craft one), so decoding is capped and checked.
 // A full 17-person month encodes to ~3 kB; these limits leave plenty of room.
 const MAX_LINK = 12_000;
 const MAX_JSON = 200_000;

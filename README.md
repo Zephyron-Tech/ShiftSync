@@ -3,7 +3,7 @@
 Nahraj PDF s plánem pracovní doby, vyber se a přidej si směny do kalendáře.
 
 - Měsíční kalendář se směnami a denním světlem v Plzni.
-- Přidání do Google Kalendáře (výběr kalendáře), do iPhone/Mac kalendáře (odběr) nebo stažení `.ics`.
+- Přidání do Google Kalendáře (výběr kalendáře) nebo stažení `.ics`. Kalendář, který se sám aktualizuje (odběr pro iPhone/Mac i Google), dává jen WhatsApp bot: odkaz `/api/cal/<token>` je stálý a bot ho posílá v každé odpovědi (také na příkaz „odkaz“).
 - Volitelně WhatsApp bot: přepošleš PDF do chatu a přijde odkaz s náhledem.
 
 ```bash
