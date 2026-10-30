@@ -74,20 +74,24 @@ export async function POST(request: Request) {
           continue;
         }
         const base = baseUrl();
-        const preview = `${base}/#d=${encodeSchedule(onlyPeople(schedule, [person]))}&p=${encodeURIComponent(person)}`;
         const month = `${MONTHS[schedule.month - 1]} ${schedule.year}`;
-        let text = `Rozpis na ${month}: ${mine.shifts.length} směn.\nNáhled:\n${preview}`;
+        const link = `${base}/#d=${encodeSchedule(onlyPeople(schedule, [person]))}&p=${encodeURIComponent(person)}`;
+        let preview = link;
+        let rest = "";
         try {
           const { token: calToken, first, overwrote } = await saveMonth(person, schedule.year, schedule.month, mine.shifts);
           const sub = `${base}/#s=${calToken}&p=${encodeURIComponent(person)}`;
-          text += first
+          // the preview carries the feed token too, so its export panel can offer the live subscription
+          preview = `${link}&t=${calToken}`;
+          rest += first
             ? `\n\nKalendář si stačí přidat jednou, další rozpisy už jen přepošli a doplní se sám:\n${sub}`
             : `\n\nDoplnil jsem to do tvého kalendáře, změna se projeví do 24 hodin.\nOdběr kalendáře (přidává se jen jednou):\n${sub}`;
-          if (overwrote.length) text += "\nPozor: ručně upravené směny na tento měsíc jsem přepsal rozpisem z PDF.";
-          text += `\nZměnu směny pošli jako text, např. „zmena 12.11. D7“, nebo napiš „pomoc“.`;
+          if (overwrote.length) rest += "\nPozor: ručně upravené směny na tento měsíc jsem přepsal rozpisem z PDF.";
+          rest += `\nZměnu směny pošli jako text, např. „zmena 12.11. D7“, nebo napiš „pomoc“.`;
         } catch (err) {
           console.error("whatsapp: saving month failed", err instanceof Error ? err.message : err);
         }
+        const text = `Rozpis na ${month}: ${mine.shifts.length} směn.\nNáhled:\n${preview}${rest}`;
         await sendText(phoneId, d.from, text, token, version);
       } catch (err) {
         console.error("whatsapp: processing failed", err instanceof Error ? err.message : err);

@@ -12,13 +12,16 @@ function fileName(s: Schedule) {
   return `sluzby-${s.year}-${String(s.month).padStart(2, "0")}.ics`;
 }
 
-export function ExportPanel({ schedule, person, heading = true }: { schedule: Schedule; person: Person; heading?: boolean }) {
+export function ExportPanel({ schedule, person, heading = true, feedToken = null }: { schedule: Schedule; person: Person; heading?: boolean; feedToken?: string | null }) {
   const [status, setStatus] = useState<string | null>(null);
   const [calendars, setCalendars] = useState<GCalendar[] | null>(null);
   const [target, setTarget] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const empty = person.shifts.length === 0;
+
+  // Live subscription: only with the token of the bot's stored feed, never a snapshot of this page.
+  const feedUrl = (scheme: string) => `${scheme}//${location.host}/api/cal/${feedToken}`;
 
   function download() {
     const url = URL.createObjectURL(new Blob([buildIcs(person, schedule.year, schedule.month)], { type: "text/calendar;charset=utf-8" }));
@@ -102,6 +105,19 @@ export function ExportPanel({ schedule, person, heading = true }: { schedule: Sc
         )
       ) : null}
 
+      {feedToken && (
+        <>
+          <a className={ROW} href={feedUrl("webcal:")}>
+            <b>iPhone a Mac kalendář</b>
+            <span className={DESC}>Odběr, který se sám aktualizuje. Stačí přidat jednou.</span>
+          </a>
+          <a className={ROW} href={`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(feedUrl("webcal:"))}`} target="_blank" rel="noreferrer">
+            <b>Google Kalendář podle adresy</b>
+            <span className={DESC}>Odběr, který se sám aktualizuje.</span>
+          </a>
+        </>
+      )}
+
       <button onClick={download} disabled={empty} className={ROW}>
         <b>Soubor .ics</b>
         <span className={DESC}>Pro ostatní aplikace a ruční import.</span>
@@ -113,9 +129,11 @@ export function ExportPanel({ schedule, person, heading = true }: { schedule: Sc
         </button>
       )}
 
-      <p className="text-pretty text-sm text-ink2">
-        Kalendář, který se sám aktualizuje, dostaneš od WhatsApp bota. Napiš mu „odkaz“.
-      </p>
+      {!feedToken && (
+        <p className="text-pretty text-sm text-ink2">
+          Kalendář, který se sám aktualizuje, dostaneš od WhatsApp bota. Napiš mu „odkaz“.
+        </p>
+      )}
 
       {status && (
         <p role="status" className="text-sm text-ink2">

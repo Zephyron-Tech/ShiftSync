@@ -96,6 +96,7 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [subscribe, setSubscribe] = useState<{ token: string; name: string } | null>(null);
+  const [feedToken, setFeedToken] = useState<string | null>(null);
   const [editToken, setEditToken] = useState<string | null>(null);
   const isDesktop = useIsDesktop();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,8 @@ export default function Home() {
           const sched = decodeSchedule(d);
           const wanted = h.get("p");
           setSchedule(sched);
+          const t = h.get("t");
+          setFeedToken(t && TOKEN.test(t) ? t : null);
           setPerson(wanted && sched.people.some((p) => p.name === wanted) ? wanted : sched.people[0]?.name ?? DEFAULT_PERSON);
           return;
         }
@@ -156,6 +159,7 @@ export default function Home() {
       const s = await parsePdf(await file.arrayBuffer());
       if (!s.people.length) throw new Error("Nenašel jsem v tabulce žádná jména.");
       setSchedule(s);
+      setFeedToken(null);
       setSelected(null);
       if (!s.people.some((p) => p.name === person)) setPerson(s.people[0].name);
     } catch (e) {
@@ -319,7 +323,7 @@ export default function Home() {
 
           {isDesktop && (
             <div className="lg:col-start-1 lg:row-start-3">
-              <ExportPanel key={person} schedule={schedule} person={current} />
+              <ExportPanel key={person} schedule={schedule} person={current} feedToken={feedToken} />
             </div>
           )}
 
@@ -344,7 +348,7 @@ export default function Home() {
             </button>
           </div>
           <Sheet open={sheet} onClose={() => setSheet(false)} title="Přidat do kalendáře">
-            <ExportPanel key={person} schedule={schedule} person={current} heading={false} />
+            <ExportPanel key={person} schedule={schedule} person={current} heading={false} feedToken={feedToken} />
           </Sheet>
         </>
       )}
