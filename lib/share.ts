@@ -2,7 +2,7 @@ import { deflateSync, inflateSync, strFromU8, strToU8 } from "fflate";
 import type { Person, Schedule, Shift } from "./parsePdf";
 
 // A schedule travels inside a link (after `#`, so servers never see it from the page URL).
-type Compact = { y: number; m: number; p: [string, [number, string, number?][]][] };
+type Compact = { y: number; m: number; p: [string, [number, string, (number | null)?, string[]?][]][] };
 
 // Links are untrusted (anyone can craft one for /api/ics), so decoding is capped and checked.
 // A full 17-person month encodes to ~3 kB; these limits leave plenty of room.
@@ -26,7 +26,12 @@ export function encodeSchedule(s: Schedule): string {
   const c: Compact = {
     y: s.year,
     m: s.month,
-    p: s.people.map((p) => [p.name, p.shifts.map((x) => (x.hours === undefined ? [x.day, x.code] : [x.day, x.code, x.hours]))]),
+    p: s.people.map((p) => [
+      p.name,
+      p.shifts.map((x): [number, string, (number | null)?, string[]?] =>
+        x.with?.length ? [x.day, x.code, x.hours ?? null, x.with] : x.hours === undefined ? [x.day, x.code] : [x.day, x.code, x.hours],
+      ),
+    ]),
   };
   return toB64Url(deflateSync(strToU8(JSON.stringify(c)), { level: 9 }));
 }
@@ -40,10 +45,15 @@ function bad(): never {
 
 function shiftOf(x: unknown): Shift {
   if (!Array.isArray(x)) bad();
-  const [day, code, hours] = x as unknown[];
+  const [day, code, hours, colleagues] = x as unknown[];
   if (!isInt(day, 1, 31) || !isText(code, 16)) bad();
   if (hours !== undefined && hours !== null && !(typeof hours === "number" && Number.isFinite(hours) && Math.abs(hours) <= 48)) bad();
-  return { day, code, hours: typeof hours === "number" ? hours : undefined };
+  let withNames: string[] | undefined;
+  if (colleagues !== undefined) {
+    if (!Array.isArray(colleagues) || colleagues.length > 20 || !colleagues.every((n) => isText(n, 80))) bad();
+    withNames = colleagues as string[];
+  }
+  return { day, code, hours: typeof hours === "number" ? hours : undefined, ...(withNames?.length ? { with: withNames } : {}) };
 }
 
 export function decodeSchedule(d: string): Schedule {

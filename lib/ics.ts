@@ -31,15 +31,26 @@ const VTIMEZONE = [
   "END:VTIMEZONE",
 ];
 
-function fold(line: string): string {
+const enc = new TextEncoder();
+
+/** RFC 5545 folding: physical lines of at most 75 octets (UTF-8), never splitting a character. */
+export function fold(line: string): string {
   const out: string[] = [];
-  let rest = line;
-  while (rest.length > 73) {
-    out.push(rest.slice(0, 73));
-    rest = " " + rest.slice(73);
+  let cur = "";
+  let bytes = 0;
+  for (const ch of line) {
+    const n = enc.encode(ch).length;
+    // continuation lines start with one space, so they have one octet less for content
+    if (bytes + n > (out.length ? 74 : 75)) {
+      out.push(cur);
+      cur = "";
+      bytes = 0;
+    }
+    cur += ch;
+    bytes += n;
   }
-  out.push(rest);
-  return out.join("\r\n");
+  out.push(cur);
+  return out.join("\r\n ");
 }
 
 const slug = (s: string) => s.normalize("NFD").replace(/[^\w]+/g, "").toLowerCase();
@@ -71,7 +82,7 @@ export function listEvents(p: Person, year: number, month: number): CalEvent[] {
       return {
         uid,
         summary: `Směna ${s.code}`,
-        description: `${info.label ? info.label + " směna" : "Směna"} ${s.code} (${fmtH(info.hours)} h)`,
+        description: `${info.label ? info.label + " směna" : "Směna"} ${s.code} (${fmtH(info.hours)} h)${s.with?.length ? `\nS kým: ${s.with.join(", ")}` : ""}`,
         date: iso(date),
         endDate: iso(info.overnight ? next : date),
         startTime: info.start,

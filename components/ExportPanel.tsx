@@ -6,7 +6,7 @@ import { GOOGLE_CLIENT_ID, googleSignIn, importShifts, listWritableCalendars, ty
 import type { Person, Schedule } from "@/lib/parsePdf";
 import { encodeSchedule, onlyPeople } from "@/lib/share";
 
-const ROW = "row press flex min-h-14 w-full flex-col items-start justify-center rounded-xl border border-line bg-surface px-4 py-2 text-left disabled:opacity-40";
+const ROW = "row press flex min-h-14 lg:min-h-12 lg:py-1.5 w-full flex-col items-start justify-center rounded-xl border border-line bg-surface px-4 py-2 text-left disabled:opacity-40";
 const DESC = "text-pretty text-sm text-ink2";
 
 function fileName(s: Schedule) {

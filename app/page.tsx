@@ -313,7 +313,7 @@ export default function Home() {
             <Calendar key={person} person={current} year={schedule.year} month={schedule.month} selected={day} onSelect={setSelected} />
           </div>
 
-          <div hidden={current.shifts.length === 0} className="min-h-[84px] rounded-xl border border-line bg-surface px-3 py-2 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:p-4">
+          <div hidden={current.shifts.length === 0} className="detail-card rounded-xl border border-line bg-surface px-3 py-2 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:p-4">
             <DayDetail person={current} year={schedule.year} month={schedule.month} day={day} />
           </div>
 

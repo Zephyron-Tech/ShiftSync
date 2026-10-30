@@ -1,4 +1,7 @@
-export type Shift = { day: number; code: string; hours?: number };
+import { colorAt, type Rect } from "./pdfRects";
+
+/** `color` is the PDF cell fill, only used while parsing; `with` lists colleagues on the same shift ("Jméno Příjmení"). */
+export type Shift = { day: number; code: string; hours?: number; with?: string[]; color?: string };
 export type Person = { name: string; shifts: Shift[] };
 export type Schedule = { year: number; month: number; people: Person[] };
 
@@ -14,7 +17,7 @@ const MAX_ITEMS = 20_000;
 const cx = (i: Item) => i.x + i.w / 2;
 
 /** Pure layout logic over text items (testable without pdf.js). */
-export function parseItems(items: Item[]): Schedule {
+export function parseItems(items: Item[], rects: Rect[] = []): Schedule {
   const clean = items.filter((i) => i.str.trim());
   // A real schedule page has ~1–2k text items; the layout search below is quadratic, so refuse absurd input.
   if (clean.length > MAX_ITEMS) throw new Error("PDF má příliš mnoho textu, tohle není rozpis.");
@@ -61,7 +64,7 @@ export function parseItems(items: Item[]): Schedule {
         (o) => o.y < it.y - 5 && o.y > it.y - 14 && Math.abs(cx(o) - col.x) < pitch / 2 && /^-?\d+[,.]*\d*$/.test(o.str.trim()),
       );
       const hours = h ? Number(h.str.trim().replace(",.", ",").replace(",", ".")) : undefined;
-      shifts.push({ day: col.day, code: it.str.trim(), hours: Number.isFinite(hours) ? hours : undefined });
+      shifts.push({ day: col.day, code: it.str.trim(), hours: Number.isFinite(hours) ? hours : undefined, color: colorAt(rects, c, it.y + 3) });
     }
     return { name: n.str.trim(), shifts: shifts.sort((a, b) => a.day - b.day) };
   });

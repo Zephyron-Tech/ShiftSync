@@ -38,7 +38,8 @@ export function applyEdit(shifts: Shift[], edit: Edit, daysInMonth: number): Shi
     if (edit.from === edit.to) throw new EditError("Z a na je stejný den.");
     if (byDay.has(edit.to)) throw new EditError(`${edit.to}. už směnu máš. Použij „zmena“, ať ji přepíšu.`);
     byDay.delete(edit.from);
-    byDay.set(edit.to, { ...moved, day: edit.to });
+    // colleagues belong to the old day, so they are dropped
+    byDay.set(edit.to, { day: edit.to, code: moved.code, hours: moved.hours });
   }
   return [...byDay.values()].sort((a, b) => a.day - b.day);
 }

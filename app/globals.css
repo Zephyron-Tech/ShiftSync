@@ -119,10 +119,10 @@ body {
 }
 
 /* Calendar rows share whatever height the viewport leaves, so the month fits one screen. */
-.cal { --chrome: 362px; --row-extra: 24px; }
+.cal { --chrome: 392px; --row-extra: 24px; }
 @media (min-width: 1024px) { .cal { --chrome: 150px; --row-extra: 42px; } }
 /* An unknown-code notice sits under the calendar on phones and takes its height from the rows. */
-.has-notice .cal { --chrome: 436px; }
+.has-notice .cal { --chrome: 478px; }
 @media (min-width: 1024px) { .has-notice .cal { --chrome: 150px; } }
 .cal-track {
   height: clamp(14px, calc((100dvh - var(--chrome)) / var(--rows) - var(--row-extra)), 112px);
@@ -147,3 +147,13 @@ dialog.sheet[open] { animation: sheet-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
 /* Editor has no detail card or bottom bar, only a header and a month switcher above the calendar. */
 .editor .cal { --chrome: 292px; }
 @media (min-width: 1024px) { .editor .cal { --chrome: 150px; } }
+
+/* Day detail keeps a fixed height so picking a day never moves the calendar. It needs room for the "S kým" names. */
+@layer components {
+  .detail-card { min-height: 112px; }
+  @media (max-height: 700px) { .detail-card { min-height: 104px; } }
+}
+@media (max-height: 700px) and (max-width: 1023px) {
+  .cal { --chrome: 384px; }
+  .has-notice .cal { --chrome: 478px; }
+}

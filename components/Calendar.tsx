@@ -4,7 +4,7 @@ import { shiftInfo, toneOf, type Tone } from "@/lib/codes";
 import type { Person } from "@/lib/parsePdf";
 import { daylight, fmtClock } from "@/lib/sun";
 
-type Seg = { from: number; to: number; tone: Tone; code: string; cont: boolean; start?: string; end?: string };
+type Seg = { from: number; to: number; tone: Tone; code: string; cont: boolean; start?: string; end?: string; with?: string[] };
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 const LONG_DAYS = ["neděle", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota"];
@@ -30,10 +30,10 @@ export function buildDays(person: Person, year: number, month: number) {
     const a = toH(info.start);
     const b = toH(info.end);
     if (info.overnight) {
-      add(s.day, { from: a, to: 24, tone, code: s.code, cont: false, start: info.start, end: info.end });
-      add(s.day + 1, { from: 0, to: b, tone, code: s.code, cont: true, start: info.start, end: info.end });
+      add(s.day, { from: a, to: 24, tone, code: s.code, cont: false, start: info.start, end: info.end, with: s.with });
+      add(s.day + 1, { from: 0, to: b, tone, code: s.code, cont: true, start: info.start, end: info.end, with: s.with });
     } else {
-      add(s.day, { from: a, to: b, tone, code: s.code, cont: false, start: info.start, end: info.end });
+      add(s.day, { from: a, to: b, tone, code: s.code, cont: false, start: info.start, end: info.end, with: s.with });
     }
   }
   return { count, byDay };
@@ -174,6 +174,12 @@ export function DayDetail({ person, year, month, day }: { person: Person; year: 
             </span>
           ))}
       </p>
+      {main?.with?.length ? (
+        <p className="text-pretty text-sm">
+          <span className="text-ink2">S kým: </span>
+          {main.with.join(", ")}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -14,7 +14,11 @@ pnpm test     # testy parseru potřebují lokální sluzby_listopad.pdf a sluzby
 
 ## Soukromí
 
-Při ručním nahrání se PDF čte v prohlížeči a nikam se neodesílá. U WhatsApp bota PDF prochází přes WhatsApp (Meta) a Vercel funkci, která ho zpracuje v paměti; samotné PDF ani směny kolegů se neukládají. Do soukromého Vercel Blobu se uloží jen jméno a směny odesílatele z `PERSON_MAP` (posledních 12 měsíců a 10 ručních úprav) a otisky (hash) ID zpráv kvůli opakovanému doručení. Odkaz z bota nese jen směny této osoby, zakódované za `#`. Odkazy `#s=` a `#e=` obsahují tajný token: kdo ho má, vidí a upravuje směny, proto je nikam nepřeposílej.
+Při ručním nahrání se PDF čte v prohlížeči a nikam se neodesílá. U WhatsApp bota PDF prochází přes WhatsApp (Meta) a Vercel funkci, která ho zpracuje v paměti; samotné PDF ani rozpisy kolegů se neukládají. Do soukromého Vercel Blobu se uloží jméno a směny odesílatele z `PERSON_MAP` (posledních 12 měsíců a 10 ručních úprav) a u každé směny jména kolegů, kteří mají stejný den stejnou směnu (jméno a příjmení, ne jejich směny) a otisky (hash) ID zpráv kvůli opakovanému doručení. Odkaz z bota nese jen směny této osoby, zakódované za `#`. Odkazy `#s=` a `#e=` obsahují tajný token: kdo ho má, vidí a upravuje směny, proto je nikam nepřeposílej.
+
+## S kým mám směnu
+
+U každé pracovní směny (D5, D6, D7, D7.3, D8, N18, N19, R, Ev) appka do poznámky události (v Apple Kalendáři „Poznámky“, v Googlu „Popis“) připíše `S kým: Jméno Příjmení, …`. Kolega se uvede, jen když má ten den stejný kód, překrývající se čas a stejnou barvu buňky v PDF (barvu čteme z kresby stránky; když ji nejde přečíst, rozhoduje kód a čas). Absence a školení (ŘD, Ne, NV, RH, ŠK, OZP, PřČ) se nevypisují. Ruční úprava směny seznam kolegů u ní smaže, nové PDF ho vrátí.
 
 ## Změny směn bez nového PDF
 
